@@ -9,7 +9,7 @@ const TEST_USER = {
   password: 'Hello123',
 };
 const TEST_USER_ENABLED =
-  import.meta.env.DEV || import.meta.env.VITE_ENABLE_TEST_USER === 'true';
+   import.meta.env.VITE_ENABLE_TEST_USER === 'false';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
