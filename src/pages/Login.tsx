@@ -4,36 +4,57 @@ import AuthForm from '@/components/AuthForm';
 import Logo from '@/components/Logo';
 import { toast } from 'sonner';
 
+const TEST_USER = {
+  email: 'preview@example.com',
+  password: 'Hello123',
+};
+const TEST_USER_ENABLED =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_TEST_USER === 'true';
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (data: any) => {
     try {
-      const response = await fetch("http://9.169.249.118:8000/sign-in", {
-        method: "POST",
-        mode: "cors", // Added to handle CORS
+      // Frontend-only test user bypass (no backend call)
+      if (
+        TEST_USER_ENABLED &&
+        data?.email === TEST_USER.email &&
+        data?.password === TEST_USER.password
+      ) {
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('token', 'test-user-token'); // dummy token
+        localStorage.setItem('userEmail', TEST_USER.email);
+        toast.success('Logged in as test user (frontend only)');
+        navigate('/dashboard');
+        return;
+      }
+
+      const response = await fetch('http://9.169.249.118:8000/sign-in', {
+        method: 'POST',
+        mode: 'cors',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error('Login failed');
       }
 
       const result = await response.json();
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("token", result.token);
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('token', result.token);
 
-      toast.success("Login successful!");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
-        toast.error("Unable to connect to the server. Please check your network or contact support.");
+      toast.success('Login successful!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        toast.error('Unable to connect to the server. Please check your network or contact support.');
       } else {
-        toast.error("Invalid email or password. Please try again.");
+        toast.error('Invalid email or password. Please try again.');
       }
     }
   };
@@ -46,12 +67,12 @@ const Login: React.FC = () => {
           <Link to="/" className="mb-10 inline-block">
             <Logo />
           </Link>
-          
+
           <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
           <p className="text-muted-foreground mb-8">Log in to your account to continue</p>
-          
+
           <AuthForm type="login" onSubmit={handleLogin} />
-          
+
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
@@ -62,7 +83,7 @@ const Login: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Right panel with image/design */}
       <div className="hidden md:flex md:flex-1 bg-gradient-to-br from-primary/90 to-blue-600/90 text-white">
         <div className="flex flex-col justify-center px-10 md:px-16 max-w-lg mx-auto">
