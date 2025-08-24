@@ -8,8 +8,9 @@ const TEST_USER = {
   email: 'preview@example.com',
   password: 'Hello123',
 };
-const TEST_USER_ENABLED =
-   import.meta.env.VITE_ENABLE_TEST_USER === 'false';
+
+// Enable by default; set VITE_ENABLE_TEST_USER='false' to turn off
+const TEST_USER_ENABLED = import.meta.env.VITE_ENABLE_TEST_USER !== 'false';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -30,18 +31,14 @@ const Login: React.FC = () => {
         return;
       }
 
-      const response = await fetch('http://9.169.249.118:8000/sign-in', {
+      // Use same-origin path; Vercel will proxy this to your HTTP backend
+      const response = await fetch('/api/sign-in', {
         method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
+      if (!response.ok) throw new Error('Login failed');
 
       const result = await response.json();
       localStorage.setItem('isLoggedIn', 'true');
